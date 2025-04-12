@@ -1,6 +1,0 @@
-INDEX VERSION 1.134+E:\LINH\Document\BK\20242\DS\.metadata\.plugins\org.eclipse.jdt.core
-1604652842.index
-624445462.index
-1027194913.index
-2038710516.index
-1865797976.index
