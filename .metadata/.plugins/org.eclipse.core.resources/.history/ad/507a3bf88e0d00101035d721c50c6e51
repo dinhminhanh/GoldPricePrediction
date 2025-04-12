@@ -1,0 +1,115 @@
+package crawler;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import driver.AMyDriverContext;
+
+public class GoldCrawler extends AMyCrawler {
+
+	private static final String URL = "https://vn.investing.com/commodities/gold";
+	private static final String JSON_PATH = "gold.json";
+
+	public GoldCrawler(AMyDriverContext myDriver) {
+		super(myDriver);
+	}
+
+	@Override
+	public boolean crawl() {
+		boolean check = true;
+		driver.get(URL);
+		driver.manage().window().maximize();
+		driver.manage().deleteAllCookies();
+		driver.manage().timeouts().pageLoadTimeout(40, TimeUnit.SECONDS);
+		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		WebDriverWait wait = new WebDriverWait(driver, 50);
+		wait.until(ExpectedConditions
+				.presenceOfElementLocated(By.cssSelector("div[data-test='instrument-header-details']")));
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		while (jdata.length() < 95) {
+			wait.until(ExpectedConditions
+					.presenceOfElementLocated(By.cssSelector("div[data-test='instrument-header-details']")));
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			WebElement n = driver.findElement(By.cssSelector("div[data-test='instrument-header-details']"));
+
+			// GetPrice
+			WebElement priceElement = n.findElement(By.cssSelector("div[data-test='instrument-price-last']"));
+			String price = priceElement.getText();
+			System.out.println("Price: " + price);
+
+			// GetChange
+			WebElement changeElement = n.findElement(By.cssSelector("div[data-test='instrument-price-change']"));
+			String change = changeElement.getText();
+			System.out.println("Change: " + change);
+
+			// GetPercentChange
+			WebElement percentElement = n
+					.findElement(By.cssSelector("div[data-test='instrument-price-change-percent']"));
+			String percentChange = percentElement.getText();
+			System.out.println("%Change: " + percentChange);
+
+			// Date
+			WebElement timeElement = n.findElement(By.cssSelector("time[data-test='trading-time-label']"));
+			String dateTime = timeElement.getAttribute("datetime");
+			System.out.println("Datetime: " + dateTime);
+
+			// Put to JsonObject
+			try {
+				JSONObject a = new JSONObject();
+				a.put("price", price);
+				a.put("change", change);
+				a.put("percentChange", percentChange);
+				a.put("datetime", dateTime);
+
+				jdata.put(a);
+				System.out.println("JSON Created: " + a);
+			} catch (JSONException e) {
+				System.out.println("JSON Error: " + e.getMessage());
+			}
+		}
+		driver.quit();
+
+		Set<String> uniqueJsonStrings = new HashSet<>();
+		int length = jdata.length();
+
+		for (int i = 0; i < length; i++) {
+			JSONObject jsonObject = null;
+			try {
+				jsonObject = jdata.getJSONObject(i);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			String jsonString = jsonObject.toString();
+
+			if (uniqueJsonStrings.contains(jsonString)) {
+				jdata.remove(i);
+				i--;
+				length--;
+			} else
+				uniqueJsonStrings.add(jsonString);
+		}
+
+		saveAsJsonFile(JSON_PATH);
+		return check;
+	}
+
+}

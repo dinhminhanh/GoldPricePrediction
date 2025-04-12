@@ -1,0 +1,16 @@
+# Eclipse
+.metadata/
+*.pydevproject
+.project
+.classpath
+.cproject
+.settings/
+
+# Java build
+/bin/
+/target/
+/build/
+
+# OS
+.DS_Store
+Thumbs.db

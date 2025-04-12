@@ -1,0 +1,41 @@
+import crawler.DxyCrawler;
+import crawler.GoldCrawler;
+import crawler.OilCrawler;
+import driver.AMyDriverContext;
+import driver.ChromeDriverContext;
+
+import java.util.concurrent.*;
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+
+        Future<Boolean> goldFuture = executor.submit(() -> {
+            AMyDriverContext goldContext = new ChromeDriverContext();
+            return new GoldCrawler(goldContext).crawl();
+        });
+
+        Future<Boolean> oilFuture = executor.submit(() -> {
+            AMyDriverContext oilContext = new ChromeDriverContext();
+            return new OilCrawler(oilContext).crawl();
+        });
+        
+        Future<Boolean> dxyFuture = executor.submit(() -> {
+            AMyDriverContext dxyContext = new ChromeDriverContext();
+            return new DxyCrawler(dxyContext).crawl();
+        });
+
+        // Lấy kết quả
+        boolean goldResult = goldFuture.get();
+        boolean oilResult = oilFuture.get();
+        boolean dxyResult = dxyFuture.get();
+
+        if (goldResult && oilResult && dxyResult) {
+            System.out.println("Crawling completed successfully.");
+        } else {
+            System.out.println("Crawling encountered issues.");
+        }
+
+        executor.shutdown();
+    }
+}
