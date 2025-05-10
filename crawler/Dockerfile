@@ -5,6 +5,11 @@ FROM selenium/standalone-chrome:latest AS base
 FROM maven:3-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY . .
+
+# Copy chromedriver từ base image để nhúng vào resource
+COPY --from=base /usr/bin/chromedriver ./src/main/resources/bin/chromedriver
+RUN chmod +x ./src/main/resources/bin/chromedriver
+
 RUN mvn clean package -DskipTests
 
 # --- Copy ứng dụng vào base image và chạy ---
