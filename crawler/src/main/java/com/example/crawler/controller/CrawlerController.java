@@ -23,7 +23,7 @@ public class CrawlerController {
 
     @GetMapping("/gold")
     public ResponseEntity<String> crawlGold() {
-        boolean result = goldService.crawlWithEdge();
+        boolean result = goldService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {
@@ -36,7 +36,7 @@ public class CrawlerController {
 
     @GetMapping("/gold-history")
     public ResponseEntity<String> crawlGoldHistory() {
-        boolean result = goldHistoryService.crawlWithEdge();
+        boolean result = goldHistoryService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {
@@ -49,7 +49,7 @@ public class CrawlerController {
 
     @GetMapping("/oil")
     public ResponseEntity<String> crawlOil() {
-        boolean result = oilService.crawlWithEdge();
+        boolean result = oilService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {
@@ -62,7 +62,7 @@ public class CrawlerController {
 
     @GetMapping("/oil-history")
     public ResponseEntity<String> crawlOilHistory() {
-        boolean result = oilHistoryService.crawlWithEdge();
+        boolean result = oilHistoryService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {
@@ -75,7 +75,7 @@ public class CrawlerController {
 
     @GetMapping("/dxy")
     public ResponseEntity<String> crawlDxy() {
-        boolean result = dxyService.crawlWithEdge();
+        boolean result = dxyService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {
@@ -88,7 +88,7 @@ public class CrawlerController {
 
     @GetMapping("/dxy-history")
     public ResponseEntity<String> crawlDxyHistory() {
-        boolean result = dxyHistoryService.crawlWithEdge();
+        boolean result = dxyHistoryService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {
@@ -102,7 +102,7 @@ public class CrawlerController {
 
     @GetMapping("/spx-history")
     public ResponseEntity<String> crawlSpxHistory() {
-        boolean result = spxHistoryService.crawlWithEdge();
+        boolean result = spxHistoryService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {

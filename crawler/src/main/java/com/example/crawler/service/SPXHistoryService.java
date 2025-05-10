@@ -4,12 +4,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.crawler.crawler.SPXHistoryCrawler;
 import com.example.crawler.driver.AMyDriverContext;
-import com.example.crawler.driver.EdgeDriverContext;
+import com.example.crawler.driver.ChromeDriverContext;
 
 @Service
 public class SPXHistoryService {
-    public boolean crawlWithEdge() {
-        AMyDriverContext context = new EdgeDriverContext();
+    public boolean crawlWithChrome() {
+        AMyDriverContext context = new ChromeDriverContext();
         return new SPXHistoryCrawler(context).crawl();
     }
 }
