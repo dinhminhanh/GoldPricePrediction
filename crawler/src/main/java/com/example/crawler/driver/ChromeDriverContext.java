@@ -7,14 +7,15 @@ import org.openqa.selenium.chrome.ChromeOptions;
 public class ChromeDriverContext extends AMyDriverContext {
 
 	public ChromeDriverContext() {
-	    ChromeOptions options = new ChromeOptions();
-	    options.addArguments("--headless");
-	    options.addArguments("--no-sandbox");
-	    options.addArguments("--disable-dev-shm-usage");
+		System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
 
-	    // Không cần set webdriver.chrome.driver nếu dùng selenium/standalone-chrome
-	    driver = new ChromeDriver(options);
-	}
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--headless");  // Đảm bảo dùng headless nếu cần
+		options.addArguments("--disable-gpu");
+		options.addArguments("--no-sandbox");
+		options.addArguments("--disable-dev-shm-usage");
+		driver = new ChromeDriver(options);
+    }
 
 
     @Override

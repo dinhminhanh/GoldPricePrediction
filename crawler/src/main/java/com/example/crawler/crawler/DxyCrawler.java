@@ -1,10 +1,14 @@
 package com.example.crawler.crawler;
 
+import java.time.Duration;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.example.crawler.KafkaPublisher;
 import com.example.crawler.driver.AMyDriverContext;
@@ -13,7 +17,7 @@ import com.example.crawler.driver.AMyDriverContext;
 public class DxyCrawler extends AMyCrawler {
 
 	private static final String URL = "https://vn.investing.com/indices/usdollar";
-	KafkaPublisher publisher = new KafkaPublisher("localhost:9092");
+	KafkaPublisher publisher = new KafkaPublisher("host.docker.internal:9092");
 	String topic = "dxy-data";
 
 	public DxyCrawler(AMyDriverContext myDriver) {
@@ -25,12 +29,9 @@ public class DxyCrawler extends AMyCrawler {
 		driver.get(URL);
 		driver.manage().window().setSize(new Dimension(1920, 1080));
 		driver.manage().deleteAllCookies();
-		try {
-			driver.manage().timeouts().wait(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		};
+		new WebDriverWait(driver, Duration.ofSeconds(5))
+	    .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div[data-test='instrument-header-details']")));
+
 //		WebDriverWait wait = new WebDriverWait(driver, 50);
 //		wait.until(ExpectedConditions
 //				.presenceOfElementLocated(By.cssSelector("div[data-test='instrument-header-details']")));

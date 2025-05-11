@@ -1,5 +1,6 @@
 package com.example.crawler.crawler;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.json.JSONException;
@@ -9,6 +10,8 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.example.crawler.KafkaPublisher;
 import com.example.crawler.driver.AMyDriverContext;
@@ -28,12 +31,9 @@ public class DxyHistoryCrawler extends AMyCrawler {
 		driver.get(URL);
 		driver.manage().window().setSize(new Dimension(1920, 1080));
 		driver.manage().deleteAllCookies();
-		try {
-			driver.manage().timeouts().wait(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		};
+		new WebDriverWait(driver, Duration.ofSeconds(5))
+	    .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div[data-test='instrument-header-details']")));
+
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {

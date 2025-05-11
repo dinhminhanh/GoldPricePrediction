@@ -57,6 +57,19 @@
 		    <artifactId>selenium-java</artifactId>
 		    <version>4.32.0</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>org.hibernate</groupId>
+		    <artifactId>hibernate-validator</artifactId>
+		    <version>6.2.0.Final</version> <!-- Kiểm tra phiên bản mới nhất -->
+		</dependency>
+
+		
+		<dependency>
+		    <groupId>org.springdoc</groupId>
+		    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+		    <version>2.5.0</version>
+		</dependency>
 
 	</dependencies>
 
