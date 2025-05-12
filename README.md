@@ -55,6 +55,7 @@ python train_model.py
 
 ## Docker
 ### Run 
+Previous: cd to project directory
 ```bash
 docker-compose up --build
 ```
