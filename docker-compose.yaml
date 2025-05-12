@@ -1,9 +1,11 @@
-services:
+services:    
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
     ports:
       - "2181:2181"
+    networks:
+      - my-kafka-net
     healthcheck:
       test: echo srvr | nc zookeeper 2181 || exit 1
       start_period: 10s
@@ -23,6 +25,8 @@ services:
     ports:
       - "9092:9092"
       - "9101:9101"
+    networks:
+      - my-kafka-net
     healthcheck:
       test: nc -z localhost 9092 || exit -1
       start_period: 15s
@@ -89,3 +93,27 @@ services:
       CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1      
       CONTROL_CENTER_CONNECT_HEALTHCHECK_ENDPOINT: '/connectors'      
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+
+  crawler:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    container_name: crawler-container
+    ports:
+      - "8080:8080"
+    networks:
+      - my-kafka-net
+
+  crontask:
+    build:
+      context: ./crontask
+      dockerfile: Dockerfile
+    depends_on:
+      - crawler
+    networks:
+      - my-kafka-net
+    container_name: crontask-container
+
+networks:
+  my-kafka-net:
+    driver: bridge

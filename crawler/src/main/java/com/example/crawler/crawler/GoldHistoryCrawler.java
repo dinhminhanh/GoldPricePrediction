@@ -19,7 +19,7 @@ import com.example.crawler.driver.AMyDriverContext;
 public class GoldHistoryCrawler extends AMyCrawler {
 
 	private static final String URL = "https://vn.investing.com/commodities/gold-historical-data";
-	KafkaPublisher publisher = new KafkaPublisher("localhost:9092");
+	KafkaPublisher publisher = new KafkaPublisher("broker:29092");
 	String topic = "gold-history-data";
 
 	public GoldHistoryCrawler(AMyDriverContext myDriver) {

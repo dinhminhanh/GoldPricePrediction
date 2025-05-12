@@ -17,7 +17,7 @@ import com.example.crawler.driver.AMyDriverContext;
 public class DxyCrawler extends AMyCrawler {
 
 	private static final String URL = "https://vn.investing.com/indices/usdollar";
-	KafkaPublisher publisher = new KafkaPublisher("host.docker.internal:9092");
+	KafkaPublisher publisher = new KafkaPublisher("broker:29092");
 	String topic = "dxy-data";
 
 	public DxyCrawler(AMyDriverContext myDriver) {

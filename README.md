@@ -53,4 +53,45 @@ spark-submit spark_streaming.py
 python train_model.py
 ```
 
+## Docker
+### Run 
+```bash
+docker-compose up --build
+```
+### See received data in kafka topic
+1. Open terminal inside the Kafka broker container
+```bash
+docker exec -it <broker-id> bash
+```
+2. Check gold-data
+```bash
+kafka-console-consumer --bootstrap-server broker:29092 --topic gold-data --from-beginning
+```
+3. Check gold-history-data
+```bash
+kafka-console-consumer --bootstrap-server broker:29092 --topic gold-history-data --from-beginning
+```
+4. Check old-data
+```bash
+kafka-console-consumer --bootstrap-server broker:29092 --topic old-data --from-beginning
+```
+5. Check oil-history-data
+```bash
+kafka-console-consumer --bootstrap-server broker:29092 --topic oil-history-data --from-beginning
+```
+6. Check spx-data
+```bash
+kafka-console-consumer --bootstrap-server broker:29092 --topic spx-data --from-beginning
+```
+7. Check dxy-data
+```bash
+kafka-console-consumer --bootstrap-server broker:29092 --topic dxy-data --from-beginning
+```
+8. Check dxy-history-data
+```bash
+kafka-console-consumer --bootstrap-server broker:29092 --topic dxy-history-data --from-beginning
+```
+
+
+
 

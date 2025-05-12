@@ -16,7 +16,7 @@ import com.example.crawler.driver.AMyDriverContext;
 public class OilCrawler extends AMyCrawler {
 
 	private static final String URL = "https://vn.investing.com/commodities/crude-oil";
-	KafkaPublisher publisher = new KafkaPublisher("localhost:9092");
+	KafkaPublisher publisher = new KafkaPublisher("broker:29092");
 	String topic = "oil-data";
 
 	public OilCrawler(AMyDriverContext myDriver) {

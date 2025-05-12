@@ -19,7 +19,7 @@ import com.example.crawler.driver.AMyDriverContext;
 public class SPXHistoryCrawler extends AMyCrawler {
 
 	private static final String URL = "https://vn.investing.com/indices/us-spx-500-historical-data";
-	KafkaPublisher publisher = new KafkaPublisher("localhost:9092");
+	KafkaPublisher publisher = new KafkaPublisher("broker:29092");
 	String topic = "spx500-data";
 
 	public SPXHistoryCrawler(AMyDriverContext myDriver) {
