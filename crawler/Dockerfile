@@ -5,7 +5,8 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # --- Base image chứa sẵn Chrome và ChromeDriver ---
-FROM selenium/standalone-chrome:latest AS base
+# FROM selenium/standalone-chrome:latest AS base
+FROM seleniarm/standalone-chromium AS base
 
 # --- Copy ứng dụng vào base image ---
 WORKDIR /app

@@ -4,8 +4,6 @@ services:
     container_name: zookeeper
     ports:
       - "2181:2181"
-    networks:
-      - my-kafka-net
     healthcheck:
       test: echo srvr | nc zookeeper 2181 || exit 1
       start_period: 10s
@@ -25,8 +23,6 @@ services:
     ports:
       - "9092:9092"
       - "9101:9101"
-    networks:
-      - my-kafka-net
     healthcheck:
       test: nc -z localhost 9092 || exit -1
       start_period: 15s
@@ -98,11 +94,9 @@ services:
     build:
       context: ./crawler
       dockerfile: Dockerfile
-    container_name: crawler-container
+    hostname: crawler-container
     ports:
       - "8080:8080"
-    networks:
-      - my-kafka-net
 
   crontask:
     build:
@@ -110,10 +104,4 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - crawler
-    networks:
-      - my-kafka-net
     container_name: crontask-container
-
-networks:
-  my-kafka-net:
-    driver: bridge
