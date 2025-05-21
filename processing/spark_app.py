@@ -14,7 +14,8 @@ spark_version = '3.5.5'
 
 packages = [
   f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
-  'org.apache.kafka:kafka-clients:3.9.0',    
+  'org.apache.kafka:kafka-clients:3.9.0',   
+  "org.postgresql:postgresql:42.6.0" 
 ]
 
 class SparkApp():
@@ -28,7 +29,6 @@ class SparkApp():
             SparkSession.builder
             .appName("Spark Application")
             .config("spark.jars.packages", ",".join(packages))  
-            .config("spark.jars", "./jars/postgresql-42.6.0.jar")
             .getOrCreate()
         )
         self.kafka_url = kafka_url
@@ -48,6 +48,7 @@ class SparkApp():
                 "startingOffsets": "earliest",
             }
         try:
+            logging.info(f"Reading from Kafka topics: {topics}")
             df = (
                 self.spark.readStream
                 .format("kafka")
@@ -70,6 +71,7 @@ class SparkApp():
             options = {}
 
         try:
+            logging.info("Writing to console")
             query = (
                 df.writeStream
                 .outputMode("append")
@@ -82,35 +84,36 @@ class SparkApp():
             logging.error(f"Error writing to console: {e}")
             raise
 
-    def process(self, df: DataFrame) -> DataFrame:
+    def process(self, df: DataFrame):
         """
         Processes the DataFrame, overwrite this function to process data.
         """
         pass
 
-    def write_to_postgres(self, table, uname, passwd, df: DataFrame) -> None:
+    def write_to_postgres(self, table: str, mode: str, df: DataFrame) -> None:
         """
         Writes the DataFrame to a some sources.
         table: Name of the table in PostgreSQL
-        uname: PostgreSQL username
-        passwd: PostgreSQL password
+        mode: Write mode, e.g. "append", "overwrite"
         df: DataFrame to be written
         """
-        def write_to_postgres(batch_df):
+        def write_to_postgres(batch_df, batch_id): 
+            logging.info(f"Writing batch {batch_id} to table {table}")
             batch_df.write \
                 .format("jdbc") \
                 .option("url", self.postgres_url) \
                 .option("dbtable", table) \
-                .option("user", uname) \
-                .option("password", passwd) \
+                .option("user", "gold_predict") \
+                .option("password", "gold_predict") \
                 .option("driver", "org.postgresql.Driver") \
-                .mode("append") \
+                .mode(mode) \
                 .save()
 
         try:
+            logging.info(f"Writing to PostgreSQL table: {table}")
             query = df.writeStream \
                 .foreachBatch(write_to_postgres) \
-                .outputMode("append") \
+                .outputMode(mode) \
                 .start()
 
             query.awaitTermination()

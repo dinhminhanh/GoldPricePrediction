@@ -105,3 +105,22 @@ services:
     depends_on:
       - crawler
     container_name: crontask-container
+
+  postgresql:
+    # Set wal_level from replica (default) to logical
+    # so that Debezium can capture change
+    image: postgres:16-alpine
+    command: ['postgres', '-c', 'wal_level=logical']
+    container_name: postgres_gold   
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: gold_predict
+      POSTGRES_PASSWORD: gold_predict
+      POSTGRES_DB: gold_predict
+    volumes: 
+      - gold_db:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  gold_db:
