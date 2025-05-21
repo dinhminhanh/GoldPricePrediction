@@ -4,5 +4,6 @@
 curl -X GET http://crawler-container:8080/api/crawl/gold-history &
 curl -X GET http://crawler-container:8080/api/crawl/dxy-history &
 curl -X GET http://crawler-container:8080/api/crawl/oil-history &
+curl -X GET http://crawler-container:8080/api/crawl/spx-history 
 
 wait

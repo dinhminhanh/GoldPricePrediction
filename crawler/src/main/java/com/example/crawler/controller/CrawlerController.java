@@ -13,6 +13,7 @@ import com.example.crawler.service.GoldService;
 import com.example.crawler.service.OilHistoryService;
 import com.example.crawler.service.OilService;
 import com.example.crawler.service.SPXHistoryService;
+import com.example.crawler.service.SpxService;
 
 @RestController
 @RequestMapping("/api/crawl")
@@ -89,6 +90,19 @@ public class CrawlerController {
     @GetMapping("/dxy-history")
     public ResponseEntity<String> crawlDxyHistory() {
         boolean result = dxyHistoryService.crawlWithChrome();
+        if (result) {
+            return ResponseEntity.ok("Crawl thành công!");
+        } else {
+            return ResponseEntity.status(500).body("Crawl thất bại!");
+        }
+    }
+    
+    @Autowired
+    private SpxService spxService;
+
+    @GetMapping("/spx")
+    public ResponseEntity<String> crawlSpx() {
+        boolean result = spxService.crawlWithChrome();
         if (result) {
             return ResponseEntity.ok("Crawl thành công!");
         } else {
