@@ -22,7 +22,7 @@ services:
     container_name: superset_db
     restart: unless-stopped
     volumes:
-      - db_home:/var/lib/postgresql/data
+      - gold_predict:/var/lib/postgresql/data
 
   superset:
     env_file:
@@ -113,7 +113,7 @@ services:
 volumes:
   superset_home:
     external: false
-  db_home:
+  gold_predict:
     external: false
   redis:
     external: false

@@ -1,10 +1,13 @@
 from spark_app import SparkApp
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 #############################
-KAFKA_URL = "localhost:9092"
-POSTGRES_URL = "jdbc:postgresql://localhost:5432/gold_predict"
+KAFKA_URL = os.getenv("KAFKA_URL")
+POSTGRES_URL = os.getenv("POSTGRES_URL")
 #############################
 
 def process_data(df):

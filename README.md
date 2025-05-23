@@ -33,3 +33,16 @@ The project aims to provide **real-time gold price forecasts**, offering investo
 - **Apache Spark Streaming** (Data processing)
 - **MongoDB** (Data storage)
 - **Machine Learning** (Predictive modeling)
+- **DVC** Data Management
+
+### Run this project
+```sh
+python3 -m venv venv
+source venv/bin/activate #Linux
+pip install -r requirements.txt
+dvc pull
+docker compose up -d
+python processing/history.py
+python processing/realtime.py
+docker compose up -f superset/docker-compose.yaml -d
+```

@@ -63,6 +63,30 @@ class SparkApp():
         
         return df
     
+    def read_csv(self, path: str, options=None) -> DataFrame:
+        """
+        Reads data from a CSV file.
+        """
+        if options is None:
+            options = {
+                "header": "true",
+                "inferSchema": "true",
+                "sep": ";"
+            }
+        try:
+            logging.info(f"Reading CSV file from path: {path}")
+            df = (
+                self.spark.read
+                .format("csv")
+                .options(**options)
+                .load(path)
+            )
+        except Exception as e:
+            logging.error(f"Error reading CSV file: {e}")
+            raise
+        
+        return df
+    
     def write_to_console(self, df: DataFrame, options=None) -> None:
         """
         Writes the DataFrame to the console.
@@ -120,6 +144,29 @@ class SparkApp():
         except Exception as e:
             logging.error(f"Error writing to PostgreSQL: {e}")
             raise
+        
+    def insert_to_postgres(self, table: str, df: DataFrame) -> None:
+        """
+        Inserts the DataFrame to a PostgreSQL table.
+        """
+        try:
+            logging.info(f"Inserting to PostgreSQL table: {table}")
+            df.write \
+                .format("jdbc") \
+                .option("url", self.postgres_url) \
+                .option("dbtable", table) \
+                .option("user", "gold_predict") \
+                .option("password", "gold_predict") \
+                .option("driver", "org.postgresql.Driver") \
+                .mode("append") \
+                .save()
+        except Exception as e:
+            logging.error(f"Error inserting to PostgreSQL: {e}")
+            raise
+        finally:
+            self.spark.stop()
+            logging.info("Spark session stopped")
+            self.spark.stop()            
 
 if __name__ == "__main__":
     pass
