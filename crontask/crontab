@@ -1,5 +1,0 @@
-# Mỗi 5 phút gọi các endpoint crawl gold/oil/dxy
-*/5 * * * * /curl-task.sh >> /var/log/cron.log 2>&1
-
-# 6h sáng mỗi ngày gọi crawl history
-0 6 * * * curl-task-history.sh >> /var/log/cron-history.log 2>&1
