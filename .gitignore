@@ -3,3 +3,20 @@
 /data
 gold-prediction-460617-83964170629c.json
 venv
+
+# Eclipse
+.metadata/
+*.pydevproject
+.project
+.classpath
+.cproject
+.settings/
+
+# Java build
+/bin/
+/target/
+/build/
+
+# OS
+.DS_Store
+Thumbs.db

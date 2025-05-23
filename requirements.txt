@@ -2,3 +2,4 @@ pyspark==3.5.5
 dvc
 dvc[gdrive]
 python-dotenv
+numpy

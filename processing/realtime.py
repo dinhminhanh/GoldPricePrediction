@@ -1,6 +1,7 @@
 from spark_app import SparkApp
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
+from pyspark.ml import PipelineModel
 from dotenv import load_dotenv
 import os
 
@@ -117,6 +118,9 @@ def process_data(df):
 if __name__ == "__main__":
     spark = SparkApp(KAFKA_URL, POSTGRES_URL)
 
+    model_path = os.path.join(os.path.dirname(__file__), "..", "models", "gold_price_pipeline")
+    pipeline_model = PipelineModel.load(model_path)
+    
     df = spark.read_message(topics=["gold-data", "oil-data", "dxy-data"], options=None)
 
     gold_data, oil_data, dxy_data = process_data(df)
@@ -124,3 +128,6 @@ if __name__ == "__main__":
     spark.write_to_postgres(table="gold_data", df=gold_data, mode="append")
     spark.write_to_postgres(table="oil_data", df=oil_data, mode="append")
     spark.write_to_postgres(table="dxy_data", df=dxy_data, mode="append")
+        
+    # prediction = pipeline_model.transform(new_data)
+    # prediction.select("prediction").show()

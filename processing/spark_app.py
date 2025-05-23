@@ -87,6 +87,32 @@ class SparkApp():
         
         return df
     
+    def read_jdbc(self, table: str, options=None) -> DataFrame:
+        """
+        Reads data from a PostgreSQL table.
+        """
+        if options is None:
+            options = {
+                "dbtable": table,
+                "user": "gold_predict",
+                "password": "gold_predict",
+                "driver": "org.postgresql.Driver"
+            }
+        try:
+            logging.info(f"Reading from PostgreSQL table: {table}")
+            df = (
+                self.spark.read
+                .format("jdbc")
+                .option("url", self.postgres_url)
+                .options(**options)
+                .load()
+            )
+        except Exception as e:
+            logging.error(f"Error reading from PostgreSQL: {e}")
+            raise
+        
+        return df
+    
     def write_to_console(self, df: DataFrame, options=None) -> None:
         """
         Writes the DataFrame to the console.
