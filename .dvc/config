@@ -1,0 +1,7 @@
+[core]
+    remote = gdrive_remote
+['remote "gdrive_remote"']
+    url = gdrive://17u55yMQsufG3Khem5DiJROg-nPG9Ngtr
+    gdrive_acknowledge_abuse = true
+    gdrive_service_account_json_file_path = ../gold-prediction-460617-83964170629c.json
+    gdrive_use_service_account = true

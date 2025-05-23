@@ -1,2 +1,4 @@
 /.metadata/
 ./processing/.venv/*
+/data
+gold-prediction-460617-83964170629c.json
