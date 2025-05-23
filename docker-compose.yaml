@@ -94,7 +94,6 @@ services:
     build:
       context: ./crawler
       dockerfile: Dockerfile
-    hostname: crawler-container
     ports:
       - "8080:8080"
 
