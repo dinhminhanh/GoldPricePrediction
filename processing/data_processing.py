@@ -33,9 +33,9 @@ def process_group(file_pattern, prefix):
     for file in files:
         try:
             df = pd.read_csv(file)
-            df = df.rename(columns={"Ngày": "Date", **COLUMN_MAP})
-            df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
-            df = df[["Date"] + list(COLUMN_MAP.values())].dropna(subset=["Date"])
+            df = df.rename(columns={"Ngày": "date", **COLUMN_MAP})
+            df["date"] = pd.to_datetime(df["date"], dayfirst=True, errors="coerce")
+            df = df[["date"] + list(COLUMN_MAP.values())].dropna(subset=["date"])
 
             for col in COLUMN_MAP.values():
                 df[col] = clean_numeric_column(df[col])
@@ -49,33 +49,26 @@ def process_group(file_pattern, prefix):
     if not df_list:
         print(f"⚠️ Không tìm thấy dữ liệu nào cho {prefix}")
         return
-
-    # Gộp tất cả file của 1 nhóm
+    
     merged = pd.concat(df_list, ignore_index=True)
-    merged = merged.drop_duplicates(subset="Date")
-    merged = merged.sort_values("Date").reset_index(drop=True)
-
-    # 🧩 Tạo ngày liên tục từ ngày nhỏ nhất đến lớn nhất
-    full_dates = pd.date_range(start=merged["Date"].min(), end=merged["Date"].max(), freq="D")
-    merged = merged.set_index("Date").reindex(full_dates).rename_axis("Date").reset_index()
-
-    # 🔁 Forward-fill dữ liệu bị thiếu
+    merged = merged.drop_duplicates(subset="date")
+    merged = merged.sort_values("date").reset_index(drop=True)
+    
+    full_dates = pd.date_range(start=merged["date"].min(), end=merged["date"].max(), freq="D")
+    merged = merged.set_index("date").reindex(full_dates).rename_axis("date").reset_index()
+    
     merged = merged.ffill()
-
-    # ✂️ Chỉ lấy từ 1993 trở đi
-    merged = merged[merged["Date"] >= pd.Timestamp("1993-01-01")]
-
-    # 🧹 Loại cột thiếu quá nhiều (sau khi ffill sẽ rất ít, nhưng vẫn để đề phòng)
+    
+    merged = merged[merged["date"] >= pd.Timestamp("1993-01-01")]
+    
     missing_ratio = merged.isnull().mean()
-    keep_cols = [col for col in merged.columns if missing_ratio[col] < 0.5 or col == "Date"]
+    keep_cols = [col for col in merged.columns if missing_ratio[col] < 0.5 or col == "date"]
     merged = merged[keep_cols]
-
-    # 💾 Lưu file kết quả
+    
     out_path = os.path.join(OUTPUT_DIR, f"{prefix}_cleaned.csv")
     merged.to_csv(out_path, index=False)
     print(f"✅ Đã xử lý và lưu: {out_path}")
 
-# Gọi cho từng nhóm
 process_group("oil_price*.csv", "oil")
 process_group("gold_price*.csv", "gold")
 process_group("sp500*.csv", "sp500")

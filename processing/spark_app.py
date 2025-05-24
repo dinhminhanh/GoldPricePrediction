@@ -188,11 +188,18 @@ class SparkApp():
                 .save()
         except Exception as e:
             logging.error(f"Error inserting to PostgreSQL: {e}")
-            raise
-        finally:
+            raise        
+            
+    def stop(self):
+        """
+        Stops the Spark session.
+        """
+        try:
+            logging.info("Stopping Spark session")
             self.spark.stop()
-            logging.info("Spark session stopped")
-            self.spark.stop()            
+        except Exception as e:
+            logging.error(f"Error stopping Spark session: {e}")
+            raise                
 
 if __name__ == "__main__":
     pass
