@@ -1,9 +1,10 @@
 import pandas as pd
 import os
 from glob import glob
-from functools import reduce
 
 DATA_DIR = "data"
+OUTPUT_DIR = "data"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 COLUMN_MAP = {
     "Lần cuối": "last",
@@ -15,9 +16,6 @@ COLUMN_MAP = {
 }
 
 def clean_numeric_column(series):
-    """
-    Xử lý các chuỗi số dạng '1,234.56', '204.02K', '1.5M', v.v...
-    """
     return (
         series.astype(str)
               .str.replace("K", "e3", regex=False)
@@ -28,7 +26,7 @@ def clean_numeric_column(series):
               .apply(pd.to_numeric, errors="coerce")
     )
 
-def read_and_merge_csvs(file_pattern, prefix):
+def process_group(file_pattern, prefix):
     files = glob(os.path.join(DATA_DIR, file_pattern))
     df_list = []
 
@@ -39,47 +37,46 @@ def read_and_merge_csvs(file_pattern, prefix):
             df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
             df = df[["Date"] + list(COLUMN_MAP.values())].dropna(subset=["Date"])
 
-            # Làm sạch toàn bộ cột số
             for col in COLUMN_MAP.values():
                 df[col] = clean_numeric_column(df[col])
 
             df = df.rename(columns={col: f"{prefix}_{col}" for col in COLUMN_MAP.values()})
             df_list.append(df)
-        except Exception as e:
-            print(f"⚠️ Lỗi khi đọc {file}: {e}")
 
+        except Exception as e:
+            print(f"⚠️ Lỗi khi xử lý {file}: {e}")
+
+    if not df_list:
+        print(f"⚠️ Không tìm thấy dữ liệu nào cho {prefix}")
+        return
+
+    # Gộp tất cả file của 1 nhóm
     merged = pd.concat(df_list, ignore_index=True)
     merged = merged.drop_duplicates(subset="Date")
     merged = merged.sort_values("Date").reset_index(drop=True)
-    return merged
 
-# Đọc từng nhóm dữ liệu
-gold_df = read_and_merge_csvs("gold_price*.csv", "gold")
-oil_df = read_and_merge_csvs("oil_price*.csv", "oil")
-dxy_df = read_and_merge_csvs("dxy*.csv", "dxy")
-sp500_df = read_and_merge_csvs("sp500*.csv", "sp500")
+    # 🧩 Tạo ngày liên tục từ ngày nhỏ nhất đến lớn nhất
+    full_dates = pd.date_range(start=merged["Date"].min(), end=merged["Date"].max(), freq="D")
+    merged = merged.set_index("Date").reindex(full_dates).rename_axis("Date").reset_index()
 
-# Merge outer toàn bộ
-dfs = [gold_df, oil_df, dxy_df, sp500_df]
-merged_df = reduce(lambda left, right: pd.merge(left, right, on="Date", how="outer"), dfs)
+    # 🔁 Forward-fill dữ liệu bị thiếu
+    merged = merged.ffill()
 
-# Sắp xếp theo ngày
-merged_df = merged_df.sort_values("Date").reset_index(drop=True)
+    # ✂️ Chỉ lấy từ 1993 trở đi
+    merged = merged[merged["Date"] >= pd.Timestamp("1993-01-01")]
 
-# Bỏ dữ liệu trước năm 1980
-merged_df = merged_df[merged_df["Date"] >= pd.Timestamp("1979-12-30")].reset_index(drop=True)
+    # 🧹 Loại cột thiếu quá nhiều (sau khi ffill sẽ rất ít, nhưng vẫn để đề phòng)
+    missing_ratio = merged.isnull().mean()
+    keep_cols = [col for col in merged.columns if missing_ratio[col] < 0.5 or col == "Date"]
+    merged = merged[keep_cols]
 
-# Bỏ các cột có > 50% giá trị rỗng, nhưng giữ lại toàn bộ cột `gold_`
-missing_ratio = merged_df.isnull().mean()
-cols_to_keep = [col for col in merged_df.columns if (missing_ratio[col] < 0.5 or col.startswith("gold_"))]
-merged_df = merged_df[cols_to_keep]
+    # 💾 Lưu file kết quả
+    out_path = os.path.join(OUTPUT_DIR, f"{prefix}_cleaned.csv")
+    merged.to_csv(out_path, index=False)
+    print(f"✅ Đã xử lý và lưu: {out_path}")
 
-# Đảm bảo liên tục theo ngày và forward-fill
-merged_df = merged_df.set_index("Date").resample("D").ffill().reset_index()
-
-# Điền tiếp nếu còn sót giá trị rỗng
-merged_df = merged_df.ffill()
-
-# Lưu ra file
-merged_df.to_csv("merged_gold_data.csv", index=False)
-print("✅ Dữ liệu đã được xử lý và lưu ở 'merged_gold_data.csv'")
+# Gọi cho từng nhóm
+process_group("oil_price*.csv", "oil")
+process_group("gold_price*.csv", "gold")
+process_group("sp500*.csv", "sp500")
+process_group("dxy*.csv", "dxy")
