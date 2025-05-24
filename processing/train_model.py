@@ -1,90 +1,101 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, lag
+from pyspark.sql.window import Window
+from pyspark.ml.feature import VectorAssembler, StandardScaler
+from pyspark.ml.regression import RandomForestRegressor, LinearRegression
+from pyspark.ml.evaluation import RegressionEvaluator
+
 import pandas as pd
-import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-df = pd.read_csv("data/merged_gold_data.csv")
-df = df.dropna()
-df["Date"] = pd.to_datetime(df["Date"])
-df = df.sort_values("Date")
+# 1. Tạo Spark session
+spark = SparkSession.builder.appName("GoldPricePrediction").getOrCreate()
 
+# 2. Đọc dữ liệu bằng pandas
+df_pd = pd.read_csv("data/merged_gold_data.csv")
+df_pd = df_pd.dropna()
+df_pd["Date"] = pd.to_datetime(df_pd["Date"])
+df_pd = df_pd.sort_values("Date")
+
+# 3. Đưa vào Spark
+df = spark.createDataFrame(df_pd)
+
+# 4. Tạo đặc trưng lag
 n_lags = 5
-
-features = [col for col in df.columns if col.startswith("dxy_") or col.startswith("sp500_") or col.startswith("gold_")]
+features = [c for c in df.columns if c.startswith("dxy_") or c.startswith("sp500_") or c.startswith("gold_")]
 features = [f for f in features if f not in ["gold_last", "gold_change_percent"]]
 
+window_spec = Window.orderBy("Date")
 for feat in features:
-    for lag in range(1, n_lags + 1):
-        df[f"{feat}_lag_{lag}"] = df[feat].shift(lag)
+    for i in range(1, n_lags + 1):
+        df = df.withColumn(f"{feat}_lag_{i}", lag(col(feat), i).over(window_spec))
 
+# 5. Tạo cột target
+df = df.withColumn("target", lag("gold_last", -1).over(window_spec)).dropna()
 
-df["target"] = df["gold_last"].shift(-1)
-df = df.dropna()
-
-numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-for col in numeric_cols:
-    Q1 = df[col].quantile(0.25)
-    Q3 = df[col].quantile(0.75)
+# 6. Chuyển về pandas để loại bỏ outlier
+df_pd = df.toPandas()
+for col_name in df_pd.select_dtypes(include="number").columns:
+    Q1 = df_pd[col_name].quantile(0.25)
+    Q3 = df_pd[col_name].quantile(0.75)
     IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
-    df = df[(df[col] >= lower) & (df[col] <= upper)]
+    lower, upper = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
+    df_pd = df_pd[(df_pd[col_name] >= lower) & (df_pd[col_name] <= upper)]
 
-split_index = int(len(df) * 0.7)
-train_df = df.iloc[:split_index]
-test_df = df.iloc[split_index:]
+# 7. Đưa lại vào Spark
+df = spark.createDataFrame(df_pd)
 
-X_train = train_df.drop(columns=["Date", "target", "gold_last", "gold_change_percent"])
-y_train = train_df["target"]
-X_test = test_df.drop(columns=["Date", "target", "gold_last", "gold_change_percent"])
-y_test = test_df["target"]
+# 8. Tách train/test
+train_size = int(df.count() * 0.7)
+train_df = df.limit(train_size)
+test_df = df.subtract(train_df)
 
-print(f"Số đặc trưng đầu vào: {X_train.shape[1]}")
-print(f"Số mẫu train: {len(X_train)}, test: {len(X_test)}")
+# 9. VectorAssembler + StandardScaler
+drop_cols = ["Date", "gold_last", "gold_change_percent", "target"]
+feature_cols = [c for c in df.columns if c not in drop_cols]
 
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+assembler = VectorAssembler(inputCols=feature_cols, outputCol="features_raw")
+scaler = StandardScaler(inputCol="features_raw", outputCol="features")
 
+train_vec = assembler.transform(train_df)
+train_scaled = scaler.fit(train_vec).transform(train_vec)
+
+test_vec = assembler.transform(test_df)
+test_scaled = scaler.fit(train_vec).transform(test_vec)
+
+# 10. Định nghĩa mô hình và lưu kết quả
 models = {
-    "Linear Regression": LinearRegression(),
-    "Decision Tree": DecisionTreeRegressor(random_state=42)
+    "Random Forest": RandomForestRegressor(labelCol="target", featuresCol="features", numTrees=100, seed=42),
+    "Linear Regression": LinearRegression(labelCol="target", featuresCol="features")
 }
 
 results = []
+evaluator = RegressionEvaluator(labelCol="target", predictionCol="prediction")
 
 for name, model in models.items():
-    X_train_input = X_train_scaled if name != "Decision Tree" else X_train
-    X_test_input = X_test_scaled if name != "Decision Tree" else X_test
+    fitted_model = model.fit(train_scaled)
+    train_pred = fitted_model.transform(train_scaled)
+    test_pred = fitted_model.transform(test_scaled)
 
-    model.fit(X_train_input, y_train)
+    mae = evaluator.setMetricName("mae").evaluate(test_pred)
+    mse = evaluator.setMetricName("mse").evaluate(test_pred)
+    rmse = evaluator.setMetricName("rmse").evaluate(test_pred)
+    r2 = evaluator.setMetricName("r2").evaluate(test_pred)
+    r2_train = evaluator.evaluate(train_pred)
+    mean_target = test_pred.select("target").rdd.map(lambda x: x[0]).mean()
+    accuracy = 1 - (mae / mean_target)
 
-    preds_train = model.predict(X_train_input)
-    preds_test = model.predict(X_test_input)
-
-    mae = mean_absolute_error(y_test, preds_test)
-    mse = mean_squared_error(y_test, preds_test)
-    rmse = np.sqrt(mse)
-    r2_test = r2_score(y_test, preds_test)
-
-    r2_train = r2_score(y_train, preds_train)
-
-    accuracy = 1 - (mae / y_test.mean())
-
-    print(f"\nMô hình: {name}")
+    print(f"\n🔎 Mô hình: {name}")
     print(f"MAE  : {mae:.4f}")
     print(f"MSE  : {mse:.4f}")
     print(f"RMSE : {rmse:.4f}")
-    print(f"R2 Test : {r2_test:.4f}")
+    print(f"R2 Test : {r2:.4f}")
     print(f"R2 Train: {r2_train:.4f}")
     print(f"Accuracy: {accuracy:.4f}")
 
     overfit_status = "Tốt"
-    if r2_train - r2_test > 0.1:
+    if r2_train - r2 > 0.1:
         overfit_status = "Overfit"
-    elif r2_test - r2_train > 0.1:
+    elif r2 - r2_train > 0.1:
         overfit_status = "Underfit"
 
     results.append({
@@ -92,13 +103,13 @@ for name, model in models.items():
         "MAE": mae,
         "MSE": mse,
         "RMSE": rmse,
-        "R2 Test": r2_test,
+        "R2 Test": r2,
         "R2 Train": r2_train,
         "Accuracy": accuracy,
         "Fit Status": overfit_status
     })
 
-# In bảng so sánh
+# 11. In bảng so sánh kết quả
 df_result = pd.DataFrame(results).sort_values("R2 Test", ascending=False)
-print("\n Bảng so sánh mô hình:")
+print("\n📊 Bảng so sánh mô hình:")
 print(df_result.to_string(index=False))
