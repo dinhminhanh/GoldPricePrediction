@@ -75,5 +75,5 @@ if __name__ == "__main__":
     
   processed_df = process_data(df)
     
-  # spark_app.insert_to_postgres(df=processed_df, table="history_data")
-  train_model(processed_df)
+  spark_app.insert_to_postgres(df=processed_df, table="history_data")
+  # train_model(processed_df)
