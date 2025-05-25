@@ -24,7 +24,6 @@ def merge_cleaned_files():
     merged_df = merged_df.ffill()
 
     merged_df.to_csv(OUTPUT_MERGED, index=False)
-    print(f"✅ Đã merge và lưu file: {OUTPUT_MERGED}")
 
 
 def train_model(n_lags=5):
@@ -95,15 +94,7 @@ def train_model(n_lags=5):
         mean_target = test_pred.select("target").rdd.map(lambda x: x[0]).mean()
         accuracy = 1 - (mae / mean_target)
 
-        print(f"\n🔎 Mô hình: {name}")
-        print(f"MAE  : {mae:.4f}")
-        print(f"MSE  : {mse:.4f}")
-        print(f"RMSE : {rmse:.4f}")
-        print(f"R2 Test : {r2:.4f}")
-        print(f"R2 Train: {r2_train:.4f}")
-        print(f"Accuracy: {accuracy:.4f}")
-
-        overfit_status = "Tốt"
+        overfit_status = "Good"
         if r2_train - r2 > 0.1:
             overfit_status = "Overfit"
         elif r2 - r2_train > 0.1:
@@ -121,8 +112,7 @@ def train_model(n_lags=5):
         })
 
     df_result = pd.DataFrame(results).sort_values("R2 Test", ascending=False)
-    print("\n📊 Bảng so sánh mô hình:")
-    print(df_result.to_string(index=False))
+
 
 if __name__ == "__main__":
     merge_cleaned_files()
