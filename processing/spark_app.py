@@ -34,7 +34,7 @@ class SparkApp():
         self.kafka_url = kafka_url
         self.postgres_url = postgres_url
 
-    def read_message(self, topics: list[str], options) -> DataFrame:
+    def read_message(self, topics: list[str], options=None) -> DataFrame:
         """
         Reads data from Kafka topic.
         options is a dictionary of options for the Kafka source.

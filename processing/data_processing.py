@@ -67,7 +67,6 @@ def process_group(file_pattern, prefix):
     
     out_path = os.path.join(OUTPUT_DIR, f"{prefix}_cleaned.csv")
     merged.to_csv(out_path, index=False)
-    print(f"✅ Đã xử lý và lưu: {out_path}")
 
 process_group("oil_price*.csv", "oil")
 process_group("gold_price*.csv", "gold")
