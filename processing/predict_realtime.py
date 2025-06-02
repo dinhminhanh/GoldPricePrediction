@@ -9,7 +9,7 @@ from pyspark.ml import PipelineModel
 N_LAGS = 5
 MODEL_DIR = "models/linear_regression_pipeline"  # hoặc đổi thành random_forest_pipeline nếu dùng RF
 DATA_DIR = "data"
-REALTIME_FILE = os.path.join(DATA_DIR, "realtime_input.csv")  # File dữ liệu realtime mới
+REALTIME_FILE = os.path.join("realtime_input.csv")  # File dữ liệu realtime mới
 
 def load_pipeline_model():
     return PipelineModel.load(MODEL_DIR)
@@ -57,7 +57,7 @@ def predict_realtime():
     print(f"📅 Dự đoán giá vàng cho ngày tiếp theo ({latest_prediction['Date']}): {latest_prediction['prediction']:.2f} USD")
 
     # Lưu toàn bộ kết quả dự đoán vào CSV
-    output_path = os.path.join(DATA_DIR, "prediction_result.csv")
+    output_path = os.path.join("prediction_result.csv")
 
     # Chuyển spark dataframe sang pandas để lưu csv (nếu data nhỏ)
     prediction_pd = prediction_df.toPandas()

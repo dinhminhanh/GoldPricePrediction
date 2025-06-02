@@ -54,8 +54,8 @@ def main():
     df_merged.columns.name = None  # quan trọng
 
     # ✅ Xuất file CSV
-    df_merged.to_csv("data/realtime_input.csv", index=False)
-    print("✅ Đã lưu dữ liệu mới vào data/realtime_input.csv với định dạng đầy đủ")
+    df_merged.to_csv("realtime_input.csv", index=False)
+    print("✅ Đã lưu dữ liệu mới vào realtime_input.csv với định dạng đầy đủ")
 
 if __name__ == "__main__":
     main()
