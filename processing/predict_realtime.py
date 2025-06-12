@@ -7,7 +7,7 @@ from pyspark.sql.types import DoubleType
 from pyspark.ml import PipelineModel
 
 N_LAGS = 5
-MODEL_DIR = "models/linear_regression_pipeline" 
+MODEL_DIR = "models/linear_regression_pipeline"  
 DATA_DIR = "data"
 REALTIME_FILE = os.path.join("realtime_input.csv")  
 
@@ -42,10 +42,8 @@ def prepare_realtime_data(spark, input_csv, n_lags):
 
 def predict_realtime():
     spark = SparkSession.builder.appName("RealtimeGoldPrediction").getOrCreate()
-    print("✅ SparkSession started.")
 
     pipeline_model = load_pipeline_model()
-    print(f"✅ Loaded trained model from {MODEL_DIR}")
 
     df = prepare_realtime_data(spark, REALTIME_FILE, N_LAGS)
 
@@ -62,7 +60,6 @@ def predict_realtime():
     # Chuyển spark dataframe sang pandas để lưu csv (nếu data nhỏ)
     prediction_pd = prediction_df.toPandas()
     prediction_pd.to_csv(output_path, index=False)
-    print(f"✅ Đã lưu kết quả dự đoán vào file: {output_path}")
 
 if __name__ == "__main__":
     predict_realtime()
