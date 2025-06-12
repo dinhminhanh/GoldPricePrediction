@@ -44,10 +44,10 @@ def process_group(file_pattern, prefix):
             df_list.append(df)
 
         except Exception as e:
-            print(f"⚠️ Lỗi khi xử lý {file}: {e}")
+            print(f"Lỗi khi xử lý {file}: {e}")
 
     if not df_list:
-        print(f"⚠️ Không tìm thấy dữ liệu nào cho {prefix}")
+        print(f"Không tìm thấy dữ liệu nào cho {prefix}")
         return
     
     merged = pd.concat(df_list, ignore_index=True)

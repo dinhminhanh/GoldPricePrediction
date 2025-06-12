@@ -7,9 +7,9 @@ from pyspark.sql.types import DoubleType
 from pyspark.ml import PipelineModel
 
 N_LAGS = 5
-MODEL_DIR = "models/linear_regression_pipeline"  # hoặc đổi thành random_forest_pipeline nếu dùng RF
+MODEL_DIR = "models/linear_regression_pipeline" 
 DATA_DIR = "data"
-REALTIME_FILE = os.path.join("realtime_input.csv")  # File dữ liệu realtime mới
+REALTIME_FILE = os.path.join("realtime_input.csv")  
 
 def load_pipeline_model():
     return PipelineModel.load(MODEL_DIR)

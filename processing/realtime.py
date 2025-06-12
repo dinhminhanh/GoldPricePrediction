@@ -73,47 +73,47 @@ def process_data(df):
             F.regexp_replace("change", r"[+]", "").cast(T.DoubleType())
         )
     
-    # spx_schema = T.StructType() \
-    #     .add("date", T.StringType()) \
-    #     .add("last", T.StringType()) \
-    #     .add("open", T.StringType()) \
-    #     .add("high", T.StringType()) \
-    #     .add("low", T.StringType()) \
-    #     .add("volume", T.StringType()) \
-    #     .add("percent", T.StringType()) 
-    # spx_data = df.filter(F.col("topic") == "spx-data") \
-    #     .select(F.from_json(F.col("value").cast("string"), spx_schema).alias("data")) \
-    #     .select("data.*") \
-    #     .withColumn(
-    #         "percent",
-    #         (F.regexp_replace("percent", r"[()%+]", "").cast("double"))
-    #     ) \
-    #     .withColumn(
-    #         "date",
-    #         F.to_date("date", "yyyy-MM-dd")
-    #     ) \
-    #     .withColumn(
-    #         "last",
-    #         F.regexp_replace("last", ",", "").cast(T.DoubleType())
-    #     ) \
-    #     .withColumn(
-    #         "open",
-    #         F.regexp_replace("open", ",", "").cast(T.DoubleType())
-    #     ) \
-    #     .withColumn(
-    #         "high",
-    #         F.regexp_replace("high", ",", "").cast(T.DoubleType())
-    #     ) \
-    #     .withColumn(
-    #         "low",
-    #         F.regexp_replace("low", ",", "").cast(T.DoubleType())
-    #     ) \
-    #     .withColumn(
-    #         "volume",
-    #         F.regexp_replace("volume", ",", "").cast(T.LongType())
-    #     )
+    spx_schema = T.StructType() \
+        .add("date", T.StringType()) \
+        .add("last", T.StringType()) \
+        .add("open", T.StringType()) \
+        .add("high", T.StringType()) \
+        .add("low", T.StringType()) \
+        .add("volume", T.StringType()) \
+        .add("percent", T.StringType()) 
+    spx_data = df.filter(F.col("topic") == "spx-data") \
+        .select(F.from_json(F.col("value").cast("string"), spx_schema).alias("data")) \
+        .select("data.*") \
+        .withColumn(
+            "percent",
+            (F.regexp_replace("percent", r"[()%+]", "").cast("double"))
+        ) \
+        .withColumn(
+            "date",
+            F.to_date("date", "yyyy-MM-dd")
+        ) \
+        .withColumn(
+            "last",
+            F.regexp_replace("last", ",", "").cast(T.DoubleType())
+        ) \
+        .withColumn(
+            "open",
+            F.regexp_replace("open", ",", "").cast(T.DoubleType())
+        ) \
+        .withColumn(
+            "high",
+            F.regexp_replace("high", ",", "").cast(T.DoubleType())
+        ) \
+        .withColumn(
+            "low",
+            F.regexp_replace("low", ",", "").cast(T.DoubleType())
+        ) \
+        .withColumn(
+            "volume",
+            F.regexp_replace("volume", ",", "").cast(T.LongType())
+        )
 
-    return gold_data, oil_data, dxy_data  # , spx_data
+    return gold_data, oil_data, dxy_data  , spx_data
 
 if __name__ == "__main__":
     spark = SparkApp(KAFKA_URL, POSTGRES_URL)
